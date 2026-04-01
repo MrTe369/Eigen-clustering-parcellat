@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人博客</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-left: 25px;
+            position: relative;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #f0f0f0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: #f0f0f0;
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* 文章下拉菜单样式 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            margin-top: 80px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 页面通用样式 */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        /* 首页样式 */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #fff;
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #f0f0f0;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* 修改文章网格布局 */
+        .articles-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .article-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            /* 设置卡片宽度 */
+            width: calc(33.333% - 20px);
+            /* 确保卡片高度一致 */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .article-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
+        }
+
+        .card-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .card-excerpt {
+            color: #555;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        /* 文章详情页样式 */
+        .article-detail {
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .detail-title {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .detail-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .detail-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-content {
+            line-height: 1.8;
+            color: #444;
+            font-size: 1.1rem;
+        }
+
+        /* 所有文章页面样式 */
+        .all-articles {
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .article-list-item {
+            display: flex;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .article-list-item:hover {
+            background-color: #f5f7fa;
+            padding-left: 10px;
+        }
+
+        .article-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .article-list-title {
+            flex: 1;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .article-list-title::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .article-list-item:hover .article-list-title::before {
+            width: 5px;
+        }
+
+        .article-list-meta {
+            color: #777;
+            font-size: 0.9rem;
+            min-width: 150px;
+            text-align: right;
+        }
+
+        /* 关于我页面样式 */
+        .about-content {
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .profile-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        /* 修改头像样式为圆形 */
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%; /* 设置为圆形 */
+            object-fit: cover;
+            margin: 0 auto 20px;
+            border: 5px solid #fff;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            display: block; /* 确保图片居中 */
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-img::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bio {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            margin-bottom: 25px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline-date {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* 联系方式页面样式 */
+        .contact-content {
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .contact-item:hover {
+            background-color: #f5f7fa;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .contact-text h4 {
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .social-link:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 响应式设计 */
+        @media screen and (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .nav-menu {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-item {
+                margin: 5px 10px;
+            }
+
+            .hero {
+                padding: 40px 15px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            /* 修改文章卡片在移动设备上的布局 */
+            .articles-grid {
+                flex-direction: column;
+            }
+
+            .article-card {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .article-detail, .about-content, .contact-content, .all-articles {
+                padding: 25px 20px;
+            }
+
+            .detail-title {
+                font-size: 1.8rem;
+            }
+
+            .article-list-item {
+                flex-direction: column;
+            }
+
+            .article-list-meta {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .detail-title {
+                font-size: 1.6rem;
+            }
+
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 平板设备 */
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            /* 修改文章卡片在平板设备上的布局 */
+            .article-card {
+                width: calc(50% - 20px);
+                margin-bottom: 20px;
+            }
+        }
+
+        /* 桌面设备 */
+        @media screen and (min-width: 1025px) {
+            /* 修改文章卡片在桌面设备上的布局 */
+            .article-card {
+                width: calc(33.333% - 20px);
+                margin-bottom: 20px;
+            }
+        }
+
+        /* 高清显示器 */
+        @media screen and (min-width: 1440px) {
+            /* 修改文章卡片在高清显示器上的布局 */
+            .article-card {
+                width: calc(25% - 20px);
+                margin-bottom: 20px;
+            }
+        }
+
+        /* 加载指示器 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        /* 加载动画 */
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% {
+                color: rgba(0,0,0,0);
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            40% {
+                color: #667eea;
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            60% {
+                text-shadow:
+                    .25em 0 0 #667eea,
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            80%, 100% {
+                text-shadow:
+                    .25em 0 0 #667eea,
+                    .5em 0 0 #667eea;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">我的博客</a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#" class="nav-link active" data-page="home">首页</a></li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link" data-page="all-articles">所有文章</a>
+                    <div class="dropdown-content" id="articles-dropdown">
+                        <!-- 文章列表将通过JavaScript动态生成 -->
+                    </div>
+                </li>
+                <li class="nav-item"><a href="#" class="nav-link" data-page="about">关于我</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-page="contact">联系方式</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
+        <!-- 首页 -->
+        <section id="home" class="page active">
+            <h2 class="section-title">欢迎来到小王博客</h2>
+            <div class="hero">
+                <p>一名热爱技术的前端开发者，专注于创造优雅的用户体验和高效的解决方案。</p>
+            </div>
+            <h2 class="section-title">最新文章</h2>
+            <div class="articles-grid" id="featured-articles">
+                <div class="loading">正在加载文章</div>
+            </div>
+        </section>
+
+        <!-- 所有文章页面 -->
+        <section id="all-articles" class="page">
+            <h2 class="section-title">所有文章</h2>
+            <div class="all-articles" id="all-articles-list">
+                <div class="loading">正在加载文章</div>
+            </div>
+        </section>
+
+        <!-- 文章详情页 -->
+        <section id="article-detail" class="page">
+            <div class="article-detail">
+                <h1 class="detail-title" id="detail-title">文章标题</h1>
+                <div class="detail-meta">
+                    <span>作者: 小王</span>
+                    <span id="detail-date">发布日期: 2026-03-08</span>
+                </div>
+                <div class="detail-content" id="detail-content">
+                    这里是文章的详细内容...
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于我页面 -->
+        <section id="about" class="page">
+            <h2 class="section-title">关于我</h2>
+            <div class="about-content">
+                <div class="profile-section">
+                    <!-- 修改头像图片路径并添加圆形样式 -->
+                    <img src="/个人博客/QC.png" alt="头像" class="profile-img">
+                    <h3>小王</h3>
+                    <p class="bio">前端开发工程师，拥有1年Web开发经验，精通HTML、CSS、python以及主流框架如Vue.js。致力于创建用户友好的界面和高质量的代码。</p>
+                </div>
+
+                <div class="section">
+                    <h3>个人爱好</h3>
+                    <p>编程之余喜欢阅读和旅行。热衷于探索新技术，并关注用户体验设计趋势。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系方式页面 -->
+        <section id="contact" class="page">
+            <h2 class="section-title">联系方式</h2>
+            <div class="contact-content">
+                <p>如果您有任何问题或合作意向，欢迎随时联系我！</p>
+
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <div class="contact-text">
+                            <h4>电子邮箱</h4>
+                            <p>w629669725@zohomail.cn</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-text">
+                            <h4>电话号码</h4>
+                            <p>+86 15034775435</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-text">
+                            <h4>所在城市</h4>
+                            <p>内蒙古呼和浩特</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 40px;">关注我</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link">G</a>
+                    <a href="#" class="social-link">T</a>
+                    <a href="#" class="social-link">L</a>
+                    <a href="#" class="social-link">W</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 从JSON文件加载文章数据
+        let articles = [];
+
+        // 页面切换功能
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // 如果是下拉菜单中的链接，不阻止默认行为
+                if (this.classList.contains('dropdown-item')) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                // 更新激活状态
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                // 显示对应页面
+                const pageId = this.getAttribute('data-page');
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                document.getElementById(pageId).classList.add('active');
+
+                // 如果是所有文章页面，显示文章列表
+                if(pageId === 'all-articles') {
+                    showAllArticles();
+                }
+            });
+        });
+
+        // 加载文章数据
+        function loadArticles() {
+            return fetch('articles.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    articles = data.articles;
+                    return articles;
+                })
+                .catch(error => {
+                    console.error('加载文章失败:', error);
+                    return [];
+                });
+        }
+
+        // 显示首页文章（最新3篇）
+        function showFeaturedArticles() {
+            const articlesContainer = document.getElementById('featured-articles');
+
+            // 如果文章已加载，直接显示
+            if (articles.length > 0) {
+                renderFeaturedArticles();
+                return;
+            }
+
+            // 显示加载指示器
+            articlesContainer.innerHTML = '<div class="loading">正在加载文章</div>';
+
+            // 从JSON文件加载文章
+            loadArticles().then(() => {
+                renderFeaturedArticles();
+                updateArticlesDropdown();
+            });
+        }
+
+        // 渲染首页文章（最新3篇）
+        function renderFeaturedArticles() {
+            const articlesContainer = document.getElementById('featured-articles');
+            articlesContainer.innerHTML = '';
+
+            // 获取最新的3篇文章
+            const featuredArticles = articles.slice(0, 3);
+
+            featuredArticles.forEach(article => {
+                const articleCard = document.createElement('div');
+                articleCard.className = 'article-card';
+                articleCard.innerHTML = `
+                    <div class="card-content">
+                        <h3 class="card-title">${article.title}</h3>
+                        <div class="card-meta">
+                            <span>${article.author}</span>
+                            <span>${article.date}</span>
+                        </div>
+                        <p class="card-excerpt">${article.excerpt}</p>
+                    </div>
+                `;
+
+                articleCard.addEventListener('click', () => showArticleDetail(article.id));
+                articlesContainer.appendChild(articleCard);
+            });
+        }
+
+        // 显示所有文章
+        function showAllArticles() {
+            const articlesContainer = document.getElementById('all-articles-list');
+
+            // 如果文章已加载，直接显示
+            if (articles.length > 0) {
+                renderAllArticles();
+                return;
+            }
+
+            // 显示加载指示器
+            articlesContainer.innerHTML = '<div class="loading">正在加载文章</div>';
+
+            // 从JSON文件加载文章
+            loadArticles().then(() => {
+                renderAllArticles();
+                updateArticlesDropdown();
+            });
+        }
+
+        // 渲染所有文章
+        function renderAllArticles() {
+            const articlesContainer = document.getElementById('all-articles-list');
+            articlesContainer.innerHTML = '';
+
+            articles.forEach(article => {
+                const articleItem = document.createElement('div');
+                articleItem.className = 'article-list-item';
+                articleItem.innerHTML = `
+                    <div class="article-list-title">${article.title}</div>
+                    <div class="article-list-meta">
+                        <div>${article.author}</div>
+                        <div>${article.date}</div>
+                    </div>
+                `;
+
+                articleItem.addEventListener('click', () => showArticleDetail(article.id));
+                articlesContainer.appendChild(articleItem);
+            });
+        }
+
+        // 更新文章下拉菜单
+        function updateArticlesDropdown() {
+            const dropdown = document.getElementById('articles-dropdown');
+            dropdown.innerHTML = '';
+
+            articles.forEach(article => {
+                const dropdownItem = document.createElement('a');
+                dropdownItem.href = '#';
+                dropdownItem.className = 'dropdown-item';
+                dropdownItem.textContent = article.title;
+
+                dropdownItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showArticleDetail(article.id);
+                });
+
+                dropdown.appendChild(dropdownItem);
+            });
+        }
+
+        // 显示文章详情
+        function showArticleDetail(articleId) {
+            const article = articles.find(a => a.id === articleId);
+            if(!article) return;
+
+            document.getElementById('detail-title').textContent = article.title;
+            document.getElementById('detail-date').textContent = `发布日期: ${article.date}`;
+            document.getElementById('detail-content').innerHTML = article.content;
+
+            // 切换到文章详情页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('article-detail').classList.add('active');
+
+            // 更新导航栏状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            showFeaturedArticles();
+        });
+    </script>
+</body>
+</html>
